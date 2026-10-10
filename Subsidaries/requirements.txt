@@ -1,0 +1,27 @@
+# IPMPRS — Intelligent Proposal Management and Precedent Retrieval System
+# Puducherry Police Hackathon 2026 · Problem Statement 01
+# Python dependencies
+
+# ─── Core Web Framework ───────────────────────────────────
+flask>=3.0.0
+flask-cors>=4.0.0
+ollama>=0.2.0
+
+# ─── Document Parsing & OCR ───────────────────────────────
+pypdf>=4.0.0
+python-docx>=1.1.0
+openpyxl>=3.1.0
+pdfplumber>=0.10.0
+pytesseract>=0.3.10
+Pillow>=10.0.0
+pdf2image>=1.17.0
+
+# ─── Vector Search & Similarity ───────────────────────────
+faiss-cpu>=1.7.4
+
+# ─── Executive PDF Decision Brief Generation ──────────────
+reportlab>=4.0.0
+
+# ─── Utilities ────────────────────────────────────────────
+requests>=2.31.0
+python-dateutil>=2.9.0

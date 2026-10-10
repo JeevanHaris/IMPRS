@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPMPRS · Puducherry Police Department</title>
+  <meta name="description"
+    content="Intelligent Proposal Management and Precedent Retrieval System — Puducherry Police Hackathon 2026. Problem Statement 01." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="cmpdi.css" />
+</head>
+
+<body>
+
+  <!-- ═══ AMBIENT BACKGROUND WITH VIDEO ═══ -->
+  <div class="bg-canvas">
+    <video id="bg-video" class="bg-video" autoplay muted loop playsinline preload="auto">
+      <source src="hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4" type="video/mp4" />
+    </video>
+    <div class="bg-video-overlay"></div>
+    <div class="bg-glow gl1"></div>
+    <div class="bg-glow gl2"></div>
+    <div class="bg-glow gl3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="logo">
+      <div class="logo-orb">
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="var(--accent)" stroke-width="1.5" />
+          <polygon points="20,7 32,13 32,24 20,33 8,24 8,13" stroke="var(--accent)" stroke-width="1.5" fill="none" />
+          <circle cx="20" cy="20" r="4" fill="var(--accent)" />
+          <line x1="20" y1="7" x2="20" y2="33" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 2" />
+        </svg>
+      </div>
+      <div class="logo-title-group">
+        <span class="logo-text">IPMPRS</span>
+        <span class="logo-tag">Puducherry Police</span>
+      </div>
+    </div>
+
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+      <button class="nav-item active" data-tab="dashboard" id="nav-dashboard" onclick="switchTab('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="2" />
+          <rect x="14" y="3" width="7" height="7" rx="2" />
+          <rect x="14" y="14" width="7" height="7" rx="2" />
+          <rect x="3" y="14" width="7" height="7" rx="2" />
+        </svg>
+        <span>Dashboard</span>
+      </button>
+
+      <button class="nav-item" data-tab="proposals" id="nav-proposals" onclick="switchTab('proposals')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Proposals Hub</span>
+        <span class="nav-pill" id="badge-proposals">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="new-proposal" id="nav-new-proposal" onclick="openNewProposalForm()">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+        </svg>
+        <span>+ New Proposal</span>
+      </button>
+
+      <button class="nav-item" data-tab="query" id="nav-query" onclick="switchTab('query')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <path d="M11 8v6M8 11h6" />
+        </svg>
+        <span>Precedent Search</span>
+      </button>
+
+      <button class="nav-item" data-tab="archive" id="nav-archive" onclick="switchTab('archive')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+        </svg>
+        <span>Orders Archive</span>
+        <span class="nav-pill" id="badge-docs">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="reports" id="nav-reports" onclick="switchTab('reports')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="12" y1="18" x2="12" y2="12" />
+          <line x1="9" y1="18" x2="9" y2="14" />
+          <line x1="15" y1="18" x2="15" y2="16" />
+        </svg>
+        <span>Decision Briefs</span>
+      </button>
+
+      <button class="nav-item" data-tab="ocr" id="nav-ocr" onclick="switchTab('ocr')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <polyline points="21 15 16 10 5 21" />
+        </svg>
+        <span>Image OCR</span>
+      </button>
+
+      <button class="nav-item" data-tab="docgen" id="nav-docgen" onclick="switchTab('docgen')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        <span>Doc Generator</span>
+      </button>
+
+      <button class="nav-item" data-tab="memory" id="nav-memory" onclick="switchTab('memory')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12" />
+          <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
+        </svg>
+        <span>Memory &amp; KB</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="ambient-bar">
+        <button class="ambient-toggle-btn" id="ambient-toggle" onclick="toggleBackgroundVideo()"
+          title="Adjust Ambience">
+          <svg class="ambient-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14"
+            height="14">
+            <polygon points="23 7 16 12 23 17 23 7" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+          <span id="ambient-state-text">Ambience: High</span>
+        </button>
+      </div>
+      <div class="sidebar-status-card" id="ollama-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text-label" id="status-text">Connecting…</span>
+        <span class="model-chip" id="model-chip">Precedents Engine</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main" id="main">
+
+    <!-- Mobile Topbar -->
+    <div class="mobile-topbar">
+      <button class="btn-icon mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle navigation">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <div class="mobile-brand">IPMPRS · Puducherry Police</div>
+    </div>
+
+    <!-- Global Police Header Strip with Role Switcher -->
+    <div class="dash-top-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700;">
+          Puducherry Police Hackathon 2026 · Problem Statement 01
+        </div>
+        <div style="font-size:15px; font-weight:700; color:var(--text);">
+          Intelligent Proposal Management & Precedent Retrieval System
+        </div>
+      </div>
+      <div class="header-role-bar">
+        <div class="role-switcher-box">
+          <span class="role-label">Active Role:</span>
+          <select id="role-switcher" class="role-select" onchange="onRoleChanged(this.value)">
+            <option value="initiator">Initiator (Dealing Assistant)</option>
+            <option value="reviewer">Reviewer (DSP / Inspector)</option>
+            <option value="approver">Approving Authority (SP / SSP)</option>
+            <option value="auditor">Auditor (Internal Audit)</option>
+          </select>
+        </div>
+        <div class="officer-badge" id="officer-identity">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span id="officer-name">HC R. Kumar (DA)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 1: EXECUTIVE DASHBOARD
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane active" id="pane-dashboard">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title">Executive Dashboard</h1>
+          <p class="pane-sub">Real-time status overview, turnaround intelligence & closed-loop outcomes</p>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-secondary" onclick="seedDatabaseDemo()" title="Reset/reseed synthetic data for hackathon presentation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Reset Demo Data</span>
+          </button>
+          <button class="btn-icon" title="Refresh stats" onclick="initDashboard()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <path d="M23 4v6h-6M1 20v-6h6" />
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- KPI Metrics Row -->
+      <div class="kpi-row">
+        <div class="kpi-card" id="kpi-pending">
+          <div class="kpi-icon ki-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label">Pending Action</span>
+            <span class="kpi-val" id="kv-pending">—</span>
+            <span class="kpi-hint">Awaiting submission/review</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-review">
+          <div class="kpi-icon ki-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label">Under Active Review</span>
+            <span class="kpi-val" id="kv-review">—</span>
+            <span class="kpi-hint">With Sub-Division / SP</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-approved">
+          <div class="kpi-icon ki-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label">Sanctioned & In Flight</span>
+            <span class="kpi-val" id="kv-approved">—</span>
+            <span class="kpi-hint">Approved / Implementing</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-rejected">
+          <div class="kpi-icon ki-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label">Rejected Proposals</span>
+            <span class="kpi-val" id="kv-rejected">—</span>
+            <span class="kpi-hint">Indexed as precedents</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" id="kpi-avg-days">
+          <div class="kpi-icon ki-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-label">Avg Decision Time</span>
+            <span class="kpi-val" id="kv-avg-days">—</span>
+            <span class="kpi-hint">Days to final sanction</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts & Visual Intelligence Grid -->
+      <div class="dash-grid" style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Proposals by Department Category</h2>
+            <span class="dash-card-tag">Distribution</span>
+          </div>
+          <div class="chart-box" style="height:230px; position:relative;">
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Lifecycle Status Distribution</h2>
+            <span class="dash-card-tag">Audit Tracking</span>
+          </div>
+          <div class="chart-box" style="height:230px; position:relative;">
+            <canvas id="chart-status"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closed-Loop Outcome & Lessons Learned Section -->
+      <div class="dash-card" style="margin-top:20px;">
+        <div class="dash-card-header">
+          <div>
+            <h2 class="dash-card-title">Closed-Loop Outcomes & Precedent Lessons</h2>
+            <p style="font-size:12px; color:var(--text-dim); margin-top:3px;">
+              Post-implementation lessons automatically indexed into search to prevent recurrent errors.
+            </p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="switchTab('proposals')">View All Proposals</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Subject & Category</th>
+                <th>Requesting Unit</th>
+                <th>Actual Outlay</th>
+                <th>Outcome Status</th>
+                <th>Institutional Lesson Learned</th>
+              </tr>
+            </thead>
+            <tbody id="dash-closed-tbody">
+              <tr>
+                <td colspan="6" class="tbl-empty">Loading closed proposal lessons…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 2: PROPOSALS HUB
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-proposals">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title">Proposals Management Hub</h1>
+          <p class="pane-sub">End-to-end proposal tracking from draft initiation to implementation closure</p>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-primary" onclick="openNewProposalForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>+ Initiate New Proposal</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Filter Controls Bar -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <input type="text" id="prop-search" class="search-inp" placeholder="Search title, ref no, keywords…" oninput="onProposalFilterChanged()" />
+
+          <select id="prop-filter-cat" class="filter-select" onchange="onProposalFilterChanged()">
+            <option value="All">All Categories</option>
+            <option value="Administrative">Administrative</option>
+            <option value="Technical">Technical</option>
+            <option value="Procurement">Procurement</option>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Training">Training</option>
+            <option value="Operational">Operational</option>
+          </select>
+
+          <select id="prop-filter-dept" class="filter-select" onchange="onProposalFilterChanged()">
+            <option value="All">All Units</option>
+            <option value="Law and Order (North)">Law and Order (North)</option>
+            <option value="Law and Order (South)">Law and Order (South)</option>
+            <option value="Traffic Police Headquarters">Traffic Police Headquarters</option>
+            <option value="Cyber Crime Police Station (CCPS)">Cyber Crime Police Station (CCPS)</option>
+            <option value="Armed Reserve (Gorimedu Complex)">Armed Reserve (Gorimedu)</option>
+            <option value="Police Training School (PTS Shanmugapuram)">Police Training School (PTS)</option>
+            <option value="IT & Communications Cell">IT & Communications Cell</option>
+            <option value="Coastal Police / Marine Unit">Coastal Police / Marine Unit</option>
+            <option value="Headquarters & Administration">Headquarters & Administration</option>
+          </select>
+
+          <select id="prop-filter-status" class="filter-select" onchange="onProposalFilterChanged()">
+            <option value="All">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Returned for Revision">Returned for Revision</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="In Implementation">In Implementation</option>
+            <option value="Implemented">Implemented</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+
+        <div style="font-size:12px; color:var(--text-dim);" id="proposals-count-label">
+          Showing 0 proposals
+        </div>
+      </div>
+
+      <!-- Proposals Data Table -->
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Ref No</th>
+              <th>Subject & Scope</th>
+              <th>Category</th>
+              <th>Unit / Department</th>
+              <th>Estimated Cost</th>
+              <th>Status</th>
+              <th>Precedents</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="proposals-tbody">
+            <tr>
+              <td colspan="8" class="tbl-empty">Loading proposal records…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 3: NEW / EDIT PROPOSAL + LIVE PRECEDENT GATE
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-new-proposal">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title" id="form-title">Initiate Proposal</h1>
+          <p class="pane-sub">Fill proposal particulars · Precedents surface live in real-time on the right</p>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-secondary" onclick="switchTab('proposals')">Cancel</button>
+        </div>
+      </header>
+
+      <div class="form-precedent-grid">
+        <!-- Left Column: Form -->
+        <div class="form-card">
+          <form id="proposal-form" onsubmit="event.preventDefault(); submitProposalForm();">
+            <input type="hidden" id="form-prop-id" value="" />
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Proposal Category *</label>
+                <select id="form-category" class="form-control" required onchange="onFormCategoryChanged(this.value); triggerLivePrecedentSearch();">
+                  <option value="">Select category…</option>
+                  <option value="Administrative">Administrative</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Procurement">Procurement</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Training">Training</option>
+                  <option value="Operational">Operational</option>
+                </select>
+                <div class="form-hint" id="cat-hint">Select a category for police guidelines.</div>
+              </div>
+
+              <div class="form-group">
+                <label>Department / Police Unit *</label>
+                <select id="form-dept" class="form-control" required onchange="triggerLivePrecedentSearch();">
+                  <option value="">Select unit…</option>
+                  <option value="Law and Order (North)">Law and Order (North Sub-Division)</option>
+                  <option value="Law and Order (South)">Law and Order (South Sub-Division)</option>
+                  <option value="Traffic Police Headquarters">Traffic Police Headquarters</option>
+                  <option value="Cyber Crime Police Station (CCPS)">Cyber Crime Police Station (CCPS)</option>
+                  <option value="Armed Reserve (Gorimedu Complex)">Armed Reserve (Gorimedu Complex)</option>
+                  <option value="Police Training School (PTS Shanmugapuram)">Police Training School (PTS Shanmugapuram)</option>
+                  <option value="IT & Communications Cell">IT & Communications Cell</option>
+                  <option value="Coastal Police / Marine Unit">Coastal Police / Marine Unit</option>
+                  <option value="Headquarters & Administration">Headquarters & Administration</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Estimated Financial Outlay (INR) *</label>
+                <input type="number" id="form-cost" class="form-control" placeholder="e.g. 4500000" min="0" required />
+                <div class="form-hint">Financial sanction head: Police Modernization / Capital Works</div>
+              </div>
+
+              <div class="form-group">
+                <label>Priority Grading *</label>
+                <select id="form-priority" class="form-control" required>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="Low">Low Priority</option>
+                  <option value="High">High Priority</option>
+                  <option value="Urgent">Urgent / Time-Critical</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Proposal Subject / Title *</label>
+              <input type="text" id="form-title-inp" class="form-control" placeholder="e.g. Procurement of 140 High-Definition IP CCTV Cameras for Town Stations" required oninput="triggerLivePrecedentSearch();" />
+              <div class="form-hint">Crisp, specific title identifying target equipment, locations, or works.</div>
+            </div>
+
+            <div class="form-group">
+              <label>Scope & Technical Description *</label>
+              <textarea id="form-desc" class="form-control" rows="4" placeholder="Detail the technical specifications, quantities, station sites, delivery schedule, and warranty expectations…" required oninput="triggerLivePrecedentSearch();"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Justification & Operational Necessity *</label>
+              <textarea id="form-just" class="form-control" rows="3" placeholder="Explain the operational problem, statutory directives, public safety impact, or audit compliance reason…" required oninput="triggerLivePrecedentSearch();"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Supporting Documents / Quotations (Mock)</label>
+              <input type="file" id="form-file" class="form-control" />
+              <div class="form-hint">Attach vendor quotation comparisons, site inspection notes, or PWD estimates.</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+              <button type="button" class="btn btn-secondary" onclick="saveAsDraft()">Save as Draft</button>
+
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span id="gate-block-msg" style="font-size:12px; color:var(--amber); font-weight:600; display:none;">
+                  Precedent Gate Incomplete
+                </span>
+                <button type="submit" id="btn-submit-proposal" class="btn btn-primary" title="Complete Precedent Gate on the right before submission">
+                  <span>Submit Proposal</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Live Precedent Panel & Precedent Gate -->
+        <div class="precedent-panel">
+          <div class="panel-header-badge">
+            <div class="panel-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span>Live Precedents Panel</span>
+            </div>
+            <span class="live-pill">Live Active</span>
+          </div>
+
+          <p style="font-size:12px; color:var(--text-dim); line-height:1.4;">
+            As you type, past proposals across all Puducherry Police units are cross-referenced to prevent repeated rejections and surface prior lessons.
+          </p>
+
+          <!-- Duplicate Warning Banner (>=85%) -->
+          <div id="duplicate-warning" class="duplicate-warning-box" style="display:none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div>
+              <strong>HIGH SIMILARITY WARNING (>85% Match):</strong>
+              <div id="dup-warning-text" style="margin-top:2px;">A nearly identical past proposal exists in department records. Inspect precedent details below before proceeding.</div>
+            </div>
+          </div>
+
+          <!-- Precedent Cards List -->
+          <div id="live-precedents-list" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:12px; color:var(--text-dim); text-align:center; padding:30px 10px;">
+              Start typing a title or description on the left to surface past precedents…
+            </div>
+          </div>
+
+          <!-- Precedent Gate Box -->
+          <div class="precedent-gate-card" id="precedent-gate-box">
+            <div class="gate-header">
+              <div class="gate-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+                <span>Mandatory Precedent Gate</span>
+              </div>
+              <span id="gate-status-pill" class="status-pill badge-returned">Pending Review</span>
+            </div>
+            <div class="gate-sub">
+              By department directive, you must mark each surfaced precedent as <b>Relevant</b> or <b>Not Relevant</b> with an institutional reason before this proposal can be submitted.
+            </div>
+
+            <div id="gate-ack-checklist">
+              <div style="font-size:11.5px; color:var(--text-dim);">No precedents requiring acknowledgement.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 4: PROPOSAL DETAIL VIEW
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-proposal-detail">
+      <header class="pane-header" style="align-items:flex-start;">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span class="mono" id="detail-ref" style="font-size:13px; color:var(--accent); font-weight:700;">PPH/2026/PRO/0001</span>
+            <span class="status-pill" id="detail-status-pill">Draft</span>
+            <span id="detail-cat-tag" style="font-size:11.5px; color:var(--text-dim);">Procurement</span>
+          </div>
+          <h1 class="pane-title" id="detail-title" style="font-size:20px; line-height:1.3;">Proposal Detail View</h1>
+        </div>
+        <div class="header-right" style="gap:10px;">
+          <button class="btn btn-secondary" onclick="downloadDecisionBrief()" title="Official one-page executive brief for Approving Authority">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>Decision Brief (PDF)</span>
+          </button>
+          <div id="detail-action-buttons" style="display:flex; gap:8px;">
+            <!-- Injected dynamically based on role & status -->
+          </div>
+        </div>
+      </header>
+
+      <!-- Visual Status Stepper -->
+      <div class="stepper-container" id="status-stepper">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Subtabs Navigation -->
+      <div class="subtabs-nav">
+        <button class="subtab-btn active" onclick="switchSubtab('overview')">Overview & Specs</button>
+        <button class="subtab-btn" onclick="switchSubtab('precedents')">Precedents & Pulse</button>
+        <button class="subtab-btn" onclick="switchSubtab('remarks')">Officer Remarks (<span id="count-remarks">0</span>)</button>
+        <button class="subtab-btn" onclick="switchSubtab('decision')">Decision & Sanction</button>
+        <button class="subtab-btn" onclick="switchSubtab('outcome')">Outcome & Closure</button>
+        <button class="subtab-btn" onclick="switchSubtab('audit')">Cryptographic Audit Trail</button>
+      </div>
+
+      <!-- Subtab 1: Overview -->
+      <div class="subtab-pane active" id="subtab-overview">
+        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:20px;">
+          <div class="form-card">
+            <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Technical Description & Justification</h3>
+            <div style="margin-bottom:18px;">
+              <div style="font-size:11.5px; font-weight:600; color:var(--text-dim); text-transform:uppercase;">Scope Description</div>
+              <p id="detail-desc" style="font-size:13.5px; color:var(--text); line-height:1.55; margin-top:4px;">—</p>
+            </div>
+            <div>
+              <div style="font-size:11.5px; font-weight:600; color:var(--text-dim); text-transform:uppercase;">Operational Justification</div>
+              <p id="detail-just" style="font-size:13.5px; color:var(--text); line-height:1.55; margin-top:4px;">—</p>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Financial & Unit Meta</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Estimated Outlay</span>
+                <div id="detail-cost" style="font-size:20px; font-weight:700; color:var(--accent);">₹0</div>
+              </div>
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Requesting Unit</span>
+                <div id="detail-dept" style="font-size:13.5px; color:var(--text); font-weight:600;">—</div>
+              </div>
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Priority Level</span>
+                <div id="detail-priority" style="font-size:13.5px; color:var(--text);">Medium</div>
+              </div>
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Initiated By</span>
+                <div id="detail-created-by" style="font-size:13px; color:var(--text-mid);">—</div>
+              </div>
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); text-transform:uppercase;">Timestamps</span>
+                <div id="detail-dates" style="font-size:12px; color:var(--text-dim);">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtab 2: Precedents & Pulse -->
+      <div class="subtab-pane" id="subtab-precedents">
+        <div class="precedent-pulse-banner" id="detail-pulse-banner">
+          <div class="pulse-summary-line" id="detail-pulse-line">Loading precedent pulse…</div>
+          <div class="pulse-pills-row" id="detail-pulse-pills"></div>
+        </div>
+
+        <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Precedent Linkages & Initiator Acknowledgements</h3>
+        <div id="detail-precedents-list" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Subtab 3: Remarks -->
+      <div class="subtab-pane" id="subtab-remarks">
+        <div class="remarks-thread" id="detail-remarks-thread">
+          <div style="font-size:12.5px; color:var(--text-dim);">No remarks recorded yet.</div>
+        </div>
+
+        <div class="form-card" style="margin-top:16px;">
+          <h4 style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:8px;">Add Officer Observation / Remark</h4>
+          <form onsubmit="event.preventDefault(); submitAddRemark();">
+            <textarea id="inp-remark-text" class="form-control" rows="3" placeholder="Enter your official note, query, or observation…" required></textarea>
+            <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+              <button type="submit" class="btn btn-primary btn-sm">Add Observation</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Subtab 4: Decision & Sanction -->
+      <div class="subtab-pane" id="subtab-decision">
+        <div id="detail-decision-area">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Subtab 5: Outcome & Closure -->
+      <div class="subtab-pane" id="subtab-outcome">
+        <div id="detail-outcome-area">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Subtab 6: Tamper-Evident Audit Trail -->
+      <div class="subtab-pane" id="subtab-audit">
+        <div class="verify-status-banner verify-valid" id="audit-verify-banner">
+          <div>
+            <strong id="audit-verify-title">SHA-256 Cryptographic Chain of Custody: Intact</strong>
+            <div id="audit-verify-msg" style="font-size:12px; margin-top:2px;">Every status transition is cryptographically chained to the previous block hash.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="verifyCurrentAuditTrail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Re-verify Hash Chain</span>
+          </button>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Seq ID</th>
+                <th>From</th>
+                <th>To Status</th>
+                <th>Officer & Role</th>
+                <th>Observation / Action Note</th>
+                <th>Timestamp</th>
+                <th>Previous Hash</th>
+                <th>Block Hash</th>
+              </tr>
+            </thead>
+            <tbody id="detail-audit-tbody">
+              <!-- Injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 5: ORDERS ARCHIVE
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-archive">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title">Past Proposals & Orders Archive</h1>
+          <p class="pane-sub">Repository of scanned past sanction orders, police circulars, and historical tenders</p>
+        </div>
+      </header>
+
+      <!-- Ingest Dropzone Card -->
+      <div class="form-card" style="margin-bottom:20px;">
+        <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:8px;">Ingest Historical Police Document (PDF / Scans)</h3>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:14px;">
+          Uploaded documents are processed with local OCR and indexed into FAISS + BM25 for precedent discovery.
+        </p>
+
+        <form id="ingest-form" onsubmit="event.preventDefault(); submitIngestFile();">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Document File</label>
+              <input type="file" id="ingest-file" class="form-control" accept=".pdf,.docx,.xlsx,.txt,.png,.jpg" required />
+            </div>
+            <div class="form-group">
+              <label>Issuing Unit / Wing</label>
+              <select id="ingest-dept" class="form-control">
+                <option value="Headquarters & Administration">Police Headquarters</option>
+                <option value="Traffic Police Headquarters">Traffic Police</option>
+                <option value="Cyber Crime Police Station (CCPS)">Cyber Crime Police Station</option>
+                <option value="Armed Reserve (Gorimedu Complex)">Armed Reserve</option>
+                <option value="Law and Order (North)">Law and Order</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end;">
+            <button type="submit" class="btn btn-primary btn-sm">Ingest into Archive</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Archive Table -->
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Pages</th>
+              <th>Text Extracted</th>
+              <th>Indexed Chunks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="archive-tbody">
+            <tr>
+              <td colspan="5" class="tbl-empty">Loading archived documents…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 6: PRECEDENT SEARCH (QUERY)
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-query">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title">Semantic Precedent Search</h1>
+          <p class="pane-sub">Natural-language and hybrid keyword retrieval across past proposals and sanction orders</p>
+        </div>
+      </header>
+
+      <div class="form-card" style="margin-bottom:20px;">
+        <form onsubmit="event.preventDefault(); executePrecedentQuery();">
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="query-input" class="form-control" placeholder="Search: e.g. CCTV procurement for police stations rejected, patrol vehicle repair, body cameras..." required />
+            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span>Search Precedents</span>
+            </button>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+            <span style="font-size:11.5px; color:var(--text-dim);">Quick suggestions:</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setQuickQuery('CCTV cameras for police stations rejected for budget')">CCTV rejected for budget</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setQuickQuery('body cameras for traffic police')">Body-worn cameras</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setQuickQuery('firing range repair at Gorimedu')">Gorimedu firing range</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="setQuickQuery('patrol vehicle procurement with delay')">Patrol vehicles</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Query Results Area -->
+      <div id="query-results-area" style="display:none;">
+        <div class="precedent-pulse-banner" id="query-pulse-banner">
+          <div class="pulse-summary-line" id="query-pulse-line">—</div>
+          <div class="pulse-pills-row" id="query-pulse-pills"></div>
+        </div>
+
+        <div class="form-card" style="margin-bottom:20px;">
+          <h3 style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px;">AI Institutional Precedent Synthesis</h3>
+          <p id="query-answer" style="font-size:13.5px; color:var(--text); line-height:1.55;">—</p>
+        </div>
+
+        <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Matched Proposals & Sanction Orders</h3>
+        <div id="query-precedents-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════
+         PANE 7: DECISION BRIEFS (REPORTS)
+         ═════════════════════════════════════════════════════════════ -->
+    <div class="pane" id="pane-reports">
+      <header class="pane-header">
+        <div>
+          <h1 class="pane-title">Decision Briefs Repository</h1>
+          <p class="pane-sub">Executive 1-2 page appraisal PDFs designed for Approving Authorities (SP / SSP / DGP)</p>
+        </div>
+      </header>
+
+      <div class="form-card" style="margin-bottom:20px;">
+        <h3 style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:6px;">Decision Brief Architecture</h3>
+        <p style="font-size:12.5px; color:var(--text-mid); line-height:1.45;">
+          Every proposal dynamically generates an official executive appraisal document combining the proposal particulars,
+          Precedent Pulse intelligence metrics, top matched precedents with historical rejection reasons and post-sanction lessons,
+          chronological officer remarks, and statutory signature endorsement blocks.
+        </p>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Unit</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="briefs-tbody">
+            <tr>
+              <td colspan="6" class="tbl-empty">Loading proposals for brief generation…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ MODAL: RECORD DECISION & SANCTION ═══ -->
+  <div class="modal-overlay" id="modal-decision">
+    <div class="modal-box">
+      <div class="modal-title">
+        <span>Record Decision & Financial Sanction</span>
+        <button class="modal-close-btn" onclick="closeModal('modal-decision')">&times;</button>
+      </div>
+      <form onsubmit="event.preventDefault(); submitDecisionModal();">
+        <div class="form-group">
+          <label>Decision Type *</label>
+          <select id="modal-dec-type" class="form-control" required onchange="onDecisionTypeChanged(this.value)">
+            <option value="Approve">Approve as Proposed</option>
+            <option value="Approve with Modification">Approve with Modification</option>
+            <option value="Reject">Reject Proposal</option>
+            <option value="Return for Revision">Return for Revision</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Institutional Reason / Justification *</label>
+          <textarea id="modal-dec-reason" class="form-control" rows="3" placeholder="State reason, budget compliance, technical grounds, or revision directives…" required></textarea>
+        </div>
+
+        <div id="modal-dec-sanction-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sanction Order Number</label>
+              <input type="text" id="modal-dec-sanction-no" class="form-control" placeholder="e.g. PPH/SEC/2026/042" />
+            </div>
+            <div class="form-group">
+              <label>Sanctioned Amount (INR)</label>
+              <input type="number" id="modal-dec-amount" class="form-control" placeholder="e.g. 4500000" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Conditions of Sanction</label>
+            <textarea id="modal-dec-conditions" class="form-control" rows="2" placeholder="e.g. Procurement strictly via GeM; 3-year OEM warranty mandatory."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-decision')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Decision</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: RECORD IMPLEMENTATION OUTCOME ═══ -->
+  <div class="modal-overlay" id="modal-outcome">
+    <div class="modal-box">
+      <div class="modal-title">
+        <span>Record Implementation Outcome & Lessons Learned</span>
+        <button class="modal-close-btn" onclick="closeModal('modal-outcome')">&times;</button>
+      </div>
+      <form onsubmit="event.preventDefault(); submitOutcomeModal();">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Implementation Status *</label>
+            <select id="modal-out-status" class="form-control" required>
+              <option value="Completed Successfully">Completed Successfully</option>
+              <option value="Completed with Delay">Completed with Delay</option>
+              <option value="Budget Exceeded">Budget Exceeded</option>
+              <option value="Partially Implemented">Partially Implemented</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Actual Outlay Incurred (INR)</label>
+            <input type="number" id="modal-out-cost" class="form-control" placeholder="e.g. 4420000" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Completion Date</label>
+          <input type="date" id="modal-out-date" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Outcome Summary *</label>
+          <textarea id="modal-out-summary" class="form-control" rows="2" placeholder="Summary of delivered equipment, commissioning, or works executed…" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Lessons Learned (Indexed for future proposers) *</label>
+          <textarea id="modal-out-lessons" class="form-control" rows="3" placeholder="What went wrong or right? E.g. vendor delay, cabling corrosion in coastal air, warranty challenges…" required></textarea>
+          <div class="form-hint">Future officers creating similar proposals will see this lesson directly in their Live Precedent Panel.</div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-outcome')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Outcome & Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ═══ TOAST ═══ -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive" style="display:none"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PANE: IMAGE OCR
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="pane" id="pane-ocr" style="display:none">
+    <header class="pane-header">
+      <div>
+        <h1 class="pane-title">Image OCR</h1>
+        <p class="pane-sub">Extract text from scanned documents, images &amp; photographs using Tesseract AI</p>
+      </div>
+    </header>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; height:calc(100% - 80px);">
+
+      <!-- Left: Upload & Controls -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <!-- Drop Zone -->
+        <div id="ocr-drop-zone"
+          style="border:2px dashed var(--border-accent); border-radius:var(--radius-lg); padding:36px 24px;
+                 background:var(--surface); cursor:pointer; transition:all 0.2s; text-align:center;
+                 display:flex; flex-direction:column; align-items:center; gap:12px;"
+          onclick="document.getElementById('ocr-file-input').click()"
+          ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-dim)'"
+          ondragleave="this.style.borderColor='var(--border-accent)'; this.style.background='var(--surface)'"
+          ondrop="handleOcrDrop(event)">
+          <div style="width:56px; height:56px; border-radius:50%; background:var(--accent-dim); display:flex; align-items:center; justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:14px; font-weight:600; color:var(--text);">Drop your image or PDF here</div>
+            <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">or click to browse · PNG, JPG, BMP, TIFF, WEBP, PDF</div>
+          </div>
+          <input type="file" id="ocr-file-input" accept=".png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif,.webp,.pdf"
+            style="display:none" onchange="handleOcrFileSelect(this)" />
+        </div>
+
+        <!-- File Info -->
+        <div id="ocr-file-info" style="display:none; background:var(--surface); border:1px solid var(--border);
+             border-radius:var(--radius); padding:12px 16px; display:flex; align-items:center; gap:12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <div style="flex:1; min-width:0;">
+            <div id="ocr-file-name" style="font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">No file</div>
+            <div id="ocr-file-size" style="font-size:11px; color:var(--text-dim);">—</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="ocr-run-btn" onclick="runOcr()" style="flex-shrink:0;">
+            Run OCR
+          </button>
+        </div>
+
+        <!-- OCR Stats (post-result) -->
+        <div id="ocr-stats" style="display:none; background:var(--surface); border:1px solid var(--border);
+             border-radius:var(--radius); padding:14px 16px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700; margin-bottom:10px;">OCR Results</div>
+          <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div><div style="font-size:22px; font-weight:700; color:var(--text);" id="ocr-stat-chars">0</div><div style="font-size:11px; color:var(--text-dim);">Characters</div></div>
+            <div><div style="font-size:22px; font-weight:700; color:var(--text);" id="ocr-stat-pages">0</div><div style="font-size:11px; color:var(--text-dim);">Pages</div></div>
+            <div><div style="font-size:22px; font-weight:700; color:var(--text);" id="ocr-stat-conf">—</div><div style="font-size:11px; color:var(--text-dim);">Confidence</div></div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="ocrCopyText()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy Text
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="ocrAddToMemory()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+              Save to Memory
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="ocrDownloadText()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download .txt
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Extracted Text -->
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.8px;">Extracted Text</div>
+          <span id="ocr-engine-badge" style="display:none; font-size:10px; background:var(--accent-dim); color:var(--accent); border-radius:4px; padding:2px 8px; font-weight:600;">Tesseract</span>
+        </div>
+        <textarea id="ocr-result-text" readonly
+          placeholder="Extracted text will appear here after running OCR on your image or PDF…"
+          style="flex:1; min-height:380px; background:var(--surface); border:1px solid var(--border);
+                 border-radius:var(--radius); padding:14px; color:var(--text); font-family:var(--fm);
+                 font-size:12.5px; line-height:1.7; resize:none; outline:none;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PANE: DOCUMENT GENERATOR
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="pane" id="pane-docgen" style="display:none">
+    <header class="pane-header">
+      <div>
+        <h1 class="pane-title">Document Generator</h1>
+        <p class="pane-sub">Generate professional PDF &amp; DOCX reports for proposals, decisions &amp; correspondence</p>
+      </div>
+    </header>
+
+    <div style="display:grid; grid-template-columns:380px 1fr; gap:20px; height:calc(100% - 80px);">
+
+      <!-- Left: Generator Form -->
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; gap:14px; overflow-y:auto;">
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700;">Generate New Document</div>
+
+        <div class="form-group">
+          <label>Document Title *</label>
+          <input type="text" id="dg-title" class="form-control" placeholder="e.g. Proposal Approval Note — CCTV Procurement" />
+        </div>
+
+        <div class="form-group">
+          <label>Link to Proposal (Optional)</label>
+          <select id="dg-prop-select" class="form-control" onchange="onDocgenProposalSelected(this.value)">
+            <option value="">— Free-form document —</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Additional Content / Instructions</label>
+          <textarea id="dg-content" class="form-control" rows="5"
+            placeholder="Describe the report content, or provide additional context for AI to draft the narrative…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Template</label>
+          <select id="dg-template" class="form-control">
+            <option value="standard">Standard Report</option>
+            <option value="brief">Decision Brief</option>
+            <option value="letter">Official Letter</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="generateDocument('docx')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download DOCX
+          </button>
+          <button class="btn btn-secondary" style="flex:1;" onclick="generateDocument('pdf')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Preview / Info -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700; margin-bottom:12px;">Selected Proposal Preview</div>
+          <div id="dg-prop-preview" style="color:var(--text-dim); font-size:13px;">No proposal selected. Choose one from the dropdown or create a free-form document.</div>
+        </div>
+
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; flex:1;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:700; margin-bottom:12px;">Document Templates</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+              <div style="font-size:13px; font-weight:600; color:var(--text);">📄 Standard Report</div>
+              <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">Full proposal details, remarks, decision record, and AI-generated narrative. Ideal for file noting.</div>
+            </div>
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+              <div style="font-size:13px; font-weight:600; color:var(--text);">📋 Decision Brief</div>
+              <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">Executive one-pager with precedent pulse, sanction details and officer sign-offs for approving authority.</div>
+            </div>
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+              <div style="font-size:13px; font-weight:600; color:var(--text);">✉️ Official Letter</div>
+              <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">Formal police correspondence with department letterhead and signatory blocks.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PANE: MEMORY & KNOWLEDGE BASE
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="pane" id="pane-memory" style="display:none">
+    <header class="pane-header">
+      <div>
+        <h1 class="pane-title">Memory &amp; Knowledge Base</h1>
+        <p class="pane-sub">Persistent document memory · BM25 + vector search · Injected into all precedent queries</p>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary btn-sm" onclick="memorySearch()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search KB
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="confirmMemoryClear()" style="color:var(--red); border-color:var(--red);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          Clear All
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats bar -->
+    <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; display:flex; align-items:center; gap:10px;">
+        <div style="width:8px; height:8px; border-radius:50%; background:var(--cyan);"></div>
+        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-mid);">Documents</span>
+        <span style="font-size:16px; font-weight:700; color:var(--text);" id="mem-stat-docs">0</span>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; display:flex; align-items:center; gap:10px;">
+        <div style="width:8px; height:8px; border-radius:50%; background:var(--accent);"></div>
+        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-mid);">Chars Indexed</span>
+        <span style="font-size:16px; font-weight:700; color:var(--text);" id="mem-stat-chars">0</span>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; display:flex; align-items:center; gap:10px;">
+        <div style="width:8px; height:8px; border-radius:50%; background:var(--green);"></div>
+        <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-mid);">Persistent Context</span>
+        <span style="font-size:13px; font-weight:600; color:var(--green);" id="mem-rag-status">Active</span>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 360px; gap:20px; height:calc(100% - 160px);">
+
+      <!-- Left: Upload + Documents -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Upload Drop Zone -->
+        <div id="mem-drop-zone"
+          style="border:2px dashed var(--border-accent); border-radius:var(--radius-lg); padding:24px;
+                 background:var(--surface); cursor:pointer; transition:all 0.2s; text-align:center;"
+          onclick="document.getElementById('mem-file-input').click()"
+          ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-dim)'"
+          ondragleave="this.style.borderColor='var(--border-accent)'; this.style.background='var(--surface)'"
+          ondrop="handleMemoryDrop(event)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" style="margin:0 auto 8px;">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div style="font-size:13.5px; font-weight:600; color:var(--text);">Drop documents to add to Memory</div>
+          <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">or click to browse · PDF, DOCX, TXT, MD, CSV, PNG, JPG</div>
+          <input type="file" id="mem-file-input" multiple
+            accept=".pdf,.docx,.txt,.md,.csv,.xlsx,.xls,.png,.jpg,.jpeg,.bmp,.tiff"
+            style="display:none" onchange="uploadMemoryFiles(this)" />
+        </div>
+
+        <!-- Document Library -->
+        <div style="font-size:12px; font-weight:600; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.8px; display:flex; align-items:center; justify-content:space-between;">
+          <span>Uploaded Documents</span>
+          <span id="mem-doc-count" style="font-size:11px; color:var(--text-dim);">0 documents</span>
+        </div>
+
+        <div id="mem-doc-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+          <div style="color:var(--text-dim); font-size:13px; text-align:center; padding:32px 0;">
+            No documents in memory. Upload files above to begin.
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Search Panel -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="font-size:12px; font-weight:600; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.8px;">Search Memory</div>
+
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="mem-search-input" class="form-control" style="flex:1;"
+            placeholder="Search memory documents &amp; facts in real time…"
+            onkeydown="if(event.key==='Enter') memorySearch()" />
+          <button class="btn btn-primary btn-sm" onclick="memorySearch()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+
+        <div id="mem-search-results" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+          <div style="color:var(--text-dim); font-size:12.5px; padding:12px 0;">Search results will appear here.</div>
+        </div>
+
+        <!-- Persistent Context Status -->
+        <div style="background:var(--surface2); border:1px solid var(--border-accent); border-radius:var(--radius); padding:14px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+            <span style="font-size:12.5px; font-weight:600; color:var(--accent);">Persistent Context Active</span>
+          </div>
+          <div style="font-size:11.5px; color:var(--text-dim); line-height:1.6;">
+            Uploaded documents are stored on disk. Memory is automatically searched and injected as context during all precedent queries and AI synthesis.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ LOADING OVERLAY ═══ -->
+  <div id="loading-ov" class="loading-ov" style="display:none" role="dialog" aria-modal="true" aria-label="Loading">
+    <div class="loading-box">
+      <div class="loading-ring"></div>
+      <p id="loading-msg" class="loading-msg">Processing…</p>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    onerror="console.info('[IPMPRS] Chart.js offline fallback')"
+    onload="window._chartjs=true"></script>
+
+  <script src="cmpdi.js"></script>
+</body>
+
+</html>
