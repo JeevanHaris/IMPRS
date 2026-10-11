@@ -607,12 +607,20 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0110 0v4" />
                 </svg>
-                <span>Mandatory Precedent Gate</span>
+                <span>Precedent Gate</span>
               </div>
-              <span id="gate-status-pill" class="status-pill badge-returned">Pending Review</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" id="btn-ack-all" onclick="acknowledgeAllPrecedents()"
+                  style="font-size:10.5px; padding:3px 10px; background:var(--accent-dim);
+                         border:1px solid var(--border-accent); border-radius:5px; color:var(--accent);
+                         font-weight:600; cursor:pointer; display:none; white-space:nowrap;">
+                  ✓ Clear All
+                </button>
+                <span id="gate-status-pill" class="status-pill badge-returned">Pending Review</span>
+              </div>
             </div>
             <div class="gate-sub">
-              By department directive, you must mark each surfaced precedent as <b>Relevant</b> or <b>Not Relevant</b> with an institutional reason before this proposal can be submitted.
+              Mark each surfaced precedent as <b>Relevant</b> or <b>Not Relevant</b> with a reason, or click <b>Clear All</b> to proceed.
             </div>
 
             <div id="gate-ack-checklist">

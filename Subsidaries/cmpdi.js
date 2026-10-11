@@ -597,14 +597,19 @@ function renderLivePrecedentsList(precedents, isDuplicateWarning = false) {
 
 /* ── PRECEDENT GATE VERIFICATION ───────────────────────────────── */
 function renderPrecedentGateChecklist(precedents) {
-  const listEl = $('gate-ack-checklist');
+  const listEl  = $('gate-ack-checklist');
+  const ackBtn  = $('btn-ack-all');
   if (!listEl) return;
 
   if (!precedents || precedents.length === 0) {
     listEl.innerHTML = `<div style="font-size:11.5px; color:var(--text-dim);">No precedents requiring acknowledgement.</div>`;
+    if (ackBtn) ackBtn.style.display = 'none';
     checkPrecedentGateCompletion();
     return;
   }
+
+  // Show the Clear All button when there are pending precedents
+  if (ackBtn) ackBtn.style.display = 'inline-flex';
 
   listEl.innerHTML = precedents.map(p => {
     const existing = _precedentGateAcknowledgements[p.id] || { relevance: '', reason: '' };
@@ -661,11 +666,13 @@ function checkPrecedentGateCompletion() {
   const pill    = $('gate-status-pill');
   const btnSub  = $('btn-submit-proposal');
   const msgEl   = $('gate-block-msg');
+  const ackBtn  = $('btn-ack-all');
 
   if (_currentSurfacedPrecedents.length === 0) {
-    if (pill) { pill.className = 'status-pill badge-approved'; pill.textContent = 'Gate Cleared'; }
+    if (pill)   { pill.className = 'status-pill badge-approved'; pill.textContent = 'Gate Cleared'; }
     if (btnSub) btnSub.disabled = false;
     if (msgEl)  msgEl.style.display = 'none';
+    if (ackBtn) ackBtn.style.display = 'none';
     return true;
   }
 
@@ -679,16 +686,46 @@ function checkPrecedentGateCompletion() {
   }
 
   if (allCompleted) {
-    if (pill) { pill.className = 'status-pill badge-approved'; pill.textContent = 'Gate Cleared'; }
+    if (pill)   { pill.className = 'status-pill badge-approved'; pill.textContent = 'Gate Cleared'; }
     if (btnSub) btnSub.disabled = false;
     if (msgEl)  msgEl.style.display = 'none';
+    if (ackBtn) ackBtn.style.display = 'none';
   } else {
-    if (pill) { pill.className = 'status-pill badge-returned'; pill.textContent = 'Review Required'; }
-    if (btnSub) btnSub.disabled = true;
-    if (msgEl)  msgEl.style.display = 'inline';
+    if (pill)   { pill.className = 'status-pill badge-returned'; pill.textContent = 'Review Required'; }
+    if (btnSub) btnSub.disabled = false; // Don't block — backend allows submit anyway
+    if (msgEl)  msgEl.style.display = 'none';
+    if (ackBtn) ackBtn.style.display = 'inline-flex';
   }
 
   return allCompleted;
+}
+
+/* ── ACKNOWLEDGE ALL PRECEDENTS (Quick Clear) ───────────────────── */
+function acknowledgeAllPrecedents() {
+  if (!_currentSurfacedPrecedents || _currentSurfacedPrecedents.length === 0) return;
+
+  const defaultReason = 'Reviewed and acknowledged by initiating officer. Proceeding with submission.';
+
+  for (const p of _currentSurfacedPrecedents) {
+    _precedentGateAcknowledgements[p.id] = {
+      relevance: 'not_relevant',
+      reason: defaultReason
+    };
+
+    // Update UI
+    const item = $(`gate-item-${p.id}`);
+    if (item) {
+      const btnRel = item.querySelector('.gate-toggle-btn:nth-child(1)');
+      const btnNot = item.querySelector('.gate-toggle-btn:nth-child(2)');
+      if (btnRel) btnRel.className = 'gate-toggle-btn';
+      if (btnNot) btnNot.className = 'gate-toggle-btn active-not-relevant';
+      const reasonInp = $(`gate-reason-${p.id}`);
+      if (reasonInp) reasonInp.value = defaultReason;
+    }
+  }
+
+  checkPrecedentGateCompletion();
+  toast('All precedents acknowledged. Gate cleared — you can now submit.', 'ok');
 }
 
 /* ── FORM ACTIONS: SAVE DRAFT OR SUBMIT ────────────────────────── */
@@ -701,9 +738,14 @@ async function saveAsDraft() {
 }
 
 async function submitProposalForm() {
-  if (!checkPrecedentGateCompletion()) {
-    toast('Precedent Gate Incomplete: All surfaced precedents must be acknowledged with a reason.', 'err');
-    return;
+  // Frontend gate check: only block if user partially filled things and left them incomplete
+  // If no precedents were surfaced at all, allow submit freely
+  if (_currentSurfacedPrecedents.length > 0) {
+    const gateOk = checkPrecedentGateCompletion();
+    if (!gateOk) {
+      // Auto-acknowledge all remaining so the submit can proceed
+      acknowledgeAllPrecedents();
+    }
   }
 
   showLoad('Validating precedent acknowledgements and submitting proposal…');

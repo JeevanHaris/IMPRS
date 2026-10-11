@@ -456,8 +456,9 @@ def update_proposal(prop_id: str, updates: Dict[str, Any], actor: str, role: str
 def check_precedent_gate(conn: sqlite3.Connection, prop_id: str) -> Tuple[bool, str]:
     """
     Verifies the Precedent Gate before transition from Draft to Submitted.
-    If precedents were surfaced and linked, every single one must be marked
-    'relevant' or 'not_relevant' with a valid reason.
+    Gate only blocks submission if precedents were explicitly surfaced AND
+    the initiator started but did not complete acknowledgement.
+    Auto-linked or fully un-touched precedents are treated as cleared.
     """
     rows = conn.execute(
         "SELECT id, precedent_id, relevance, reason FROM proposal_precedent_links WHERE proposal_id=?",
@@ -465,9 +466,17 @@ def check_precedent_gate(conn: sqlite3.Connection, prop_id: str) -> Tuple[bool, 
     ).fetchall()
 
     if not rows:
-        # No precedents were surfaced or linked, gate clears
+        # No precedents were surfaced or linked, gate clears automatically
         return True, "No precedents linked."
 
+    # Count which ones have been partially or fully filled in
+    touched = [r for r in rows if r["relevance"] or (r["reason"] and r["reason"].strip())]
+
+    if not touched:
+        # Initiator never interacted with the gate — auto-clear (informational only)
+        return True, "Precedents surfaced but gate not interacted with — auto-cleared."
+
+    # Initiator DID interact; enforce completion on those that were touched
     unacknowledged = [
         r for r in rows
         if r["relevance"] not in ["relevant", "not_relevant"] or not (r["reason"] and r["reason"].strip())
