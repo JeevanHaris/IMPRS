@@ -1,6 +1,14 @@
 # Environment variables (contains sensitive API keys and secrets)
 .env
 
+# Local workflow demo data
+data/workflow.db*
+data/precedents.db
+data/proposal_sources/
+node_modules/
+test-results/
+playwright-report/
+
 # Python cache and temporary files
 __pycache__/
 *.py[cod]

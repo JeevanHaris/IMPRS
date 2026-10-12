@@ -1,10 +1,10 @@
 """
 IPMPRS — Multimodal OCR Engine
 ────────────────────────────────────────────────────────────────────────
-Handles image and scanned-PDF OCR via:
-  1. pytesseract (Tesseract — local, free, robust)
-  2. Pillow for image preprocessing (contrast, denoise, upscale)
-  3. pdf2image for rendering scanned PDF pages
+Handles image OCR via Ollama's vision model and scanned-PDF OCR via:
+    1. Llama 3.2 Vision for image text extraction
+    2. pytesseract (Tesseract) for rendered scanned-PDF pages
+    3. pdf2image for rendering scanned PDF pages
 
 Returns structured OCRResult objects consumed by ingestion.py.
 """
@@ -57,7 +57,7 @@ def _preprocess_image(pil_img):
 
 # ─── Image OCR ───────────────────────────────────────────────────────
 
-def ocr_image(file_bytes: bytes) -> OCRResult:
+def ocr_image(file_bytes: bytes, gateway=None, vision_model=None) -> OCRResult:
     """
     Run OCR on a single image (PNG, JPG, BMP, TIFF, WEBP, GIF).
 
@@ -68,35 +68,40 @@ def ocr_image(file_bytes: bytes) -> OCRResult:
         OCRResult with extracted text.
     """
     try:
-        import pytesseract
         from PIL import Image
     except ImportError as e:
-        return OCRResult(error=f"OCR dependencies missing: {e}. Run: pip install pytesseract Pillow")
+        return OCRResult(error=f"Image OCR dependency missing: {e}. Run: pip install Pillow")
 
+    if gateway is None:
+        return OCRResult(error="Image OCR requires Ollama. Start Ollama and configure the shared model gateway.")
+
+    model = vision_model or os.environ.get("ARIA_VISION_MODEL", "llama3.2-vision:11b")
     try:
-        pil_img = Image.open(io.BytesIO(file_bytes))
-        pil_img = _preprocess_image(pil_img)
-
-        # Custom Tesseract config: OEM 3 = LSTM, PSM 6 = uniform block of text
-        custom_config = r"--oem 3 --psm 6"
-        text = pytesseract.image_to_string(pil_img, config=custom_config, lang="eng")
-
-        # Attempt to get confidence
-        try:
-            data = pytesseract.image_to_data(pil_img, output_type=pytesseract.Output.DICT)
-            conf_values = [c for c in data["conf"] if c != -1]
-            avg_conf = sum(conf_values) / len(conf_values) / 100.0 if conf_values else 0.0
-        except Exception:
-            avg_conf = 0.75  # Default fallback
-
+        image = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+        image_buffer = io.BytesIO()
+        image.save(image_buffer, format="PNG")
+        response = gateway.call(
+            model,
+            [
+                {
+                    "role": "system",
+                    "content": "Transcribe all readable text in this image as accurately as possible. Preserve line breaks and do not summarize, interpret, or add text.",
+                },
+                {"role": "user", "content": "Extract the text from this image.", "images": [image_buffer.getvalue()]},
+            ],
+            options={"temperature": 0},
+        )
+        text = str(response.content or "").strip()
+        if not text:
+            return OCRResult(error=f"Vision model '{model}' did not detect readable text in the image.")
         return OCRResult(
-            text=text.strip(),
-            page_texts=[text.strip()],
-            confidence=round(avg_conf, 2),
-            ocr_engine="tesseract",
+            text=text,
+            page_texts=[text],
+            confidence=0.0,
+            ocr_engine=model,
         )
     except Exception as e:
-        return OCRResult(error=f"Image OCR failed: {e}")
+        return OCRResult(error=f"Vision OCR with '{model}' failed: {e}")
 
 
 # ─── Scanned PDF OCR ─────────────────────────────────────────────────
@@ -167,7 +172,7 @@ def ocr_pdf(file_bytes: bytes, dpi: int = 250) -> OCRResult:
 
 # ─── Standalone OCR endpoint helper ──────────────────────────────────
 
-def ocr_any(filename: str, file_bytes: bytes) -> OCRResult:
+def ocr_any(filename: str, file_bytes: bytes, gateway=None, vision_model=None) -> OCRResult:
     """
     Auto-detect file type and run the appropriate OCR pipeline.
     Used by the /api/ocr endpoint.
@@ -177,7 +182,7 @@ def ocr_any(filename: str, file_bytes: bytes) -> OCRResult:
     pdf_exts = {"pdf"}
 
     if ext in image_exts:
-        return ocr_image(file_bytes)
+        return ocr_image(file_bytes, gateway=gateway, vision_model=vision_model)
     elif ext in pdf_exts:
         return ocr_pdf(file_bytes)
     else:

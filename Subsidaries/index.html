@@ -20,7 +20,7 @@
   <!-- ═══ AMBIENT BACKGROUND WITH VIDEO ═══ -->
   <div class="bg-canvas">
     <video id="bg-video" class="bg-video" autoplay muted loop playsinline preload="auto">
-      <source src="hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4" type="video/mp4" />
+      <source src="hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4" type="video/mp4" />
     </video>
     <div class="bg-video-overlay"></div>
     <div class="bg-glow gl1"></div>
@@ -951,8 +951,6 @@
       </div>
     </div>
 
-  </main>
-
   <!-- ═══ MODAL: RECORD DECISION & SANCTION ═══ -->
   <div class="modal-overlay" id="modal-decision">
     <div class="modal-box">
@@ -1061,11 +1059,11 @@
     <header class="pane-header">
       <div>
         <h1 class="pane-title">Image OCR</h1>
-        <p class="pane-sub">Extract text from scanned documents, images &amp; photographs using Tesseract AI</p>
+        <p class="pane-sub">Extract text from scanned images and photographs using Llama 3.2 Vision</p>
       </div>
     </header>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; height:calc(100% - 80px);">
+    <div class="ocr-workspace">
 
       <!-- Left: Upload & Controls -->
       <div style="display:flex; flex-direction:column; gap:16px;">
@@ -1159,7 +1157,7 @@
       </div>
     </header>
 
-    <div style="display:grid; grid-template-columns:380px 1fr; gap:20px; height:calc(100% - 80px);">
+    <div class="docgen-workspace">
 
       <!-- Left: Generator Form -->
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; gap:14px; overflow-y:auto;">
@@ -1339,6 +1337,7 @@
     </div>
   </div>
 
+  </main>
 
   <!-- ═══ LOADING OVERLAY ═══ -->
   <div id="loading-ov" class="loading-ov" style="display:none" role="dialog" aria-modal="true" aria-label="Loading">

@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPMPRS Workflow</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, "Segoe UI", sans-serif; background: #111713; color: #eef2ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #111713, #19251e 58%, #27251b); }
+    main { width: min(1120px, calc(100% - 32px)); margin: 32px auto; }
+    header, .toolbar, .proposal { border-bottom: 1px solid #435047; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 16px; }
+    .muted { color: #afbbb1; }
+    form { display: grid; gap: 12px; max-width: 440px; margin: 56px auto; }
+    input, button { min-height: 42px; border: 1px solid #58665c; border-radius: 5px; padding: 9px 12px; color: inherit; background: #18211b; font: inherit; }
+    button { cursor: pointer; background: #c4a85d; border-color: #c4a85d; color: #17170f; font-weight: 700; }
+    button.secondary { background: transparent; color: inherit; border-color: #58665c; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; }
+    .stats { display: flex; gap: 18px; flex-wrap: wrap; padding: 14px 0; }
+    .proposal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 0.8fr) auto; align-items: center; gap: 16px; padding: 14px 0; }
+    .proposal-id { color: #d5bd7b; font: 12px ui-monospace, monospace; }
+    .decision { color: #c4d1c5; overflow-wrap: anywhere; }
+    #error { min-height: 20px; color: #ffb4a8; }
+    #workflow-error { min-height: 22px; color: #ffb4a8; }
+    .toolbar-actions, .row-actions, .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 0.75fr); gap: 32px; padding: 22px 0; }
+    .editor-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
+    #proposal-form { max-width: none; margin: 0; }
+    .editor-fields label, .scan-form label { display: grid; gap: 5px; color: #bdc8bf; }
+    .editor-fields .wide { grid-column: 1 / -1; }
+    .editor-fields input, .editor-fields textarea, .editor-fields select, .scan-form input, #decision-remark { width: 100%; border: 1px solid #58665c; border-radius: 5px; padding: 9px 10px; color: inherit; background: #18211b; font: inherit; }
+    .editor-fields textarea { min-height: 78px; resize: vertical; }
+    .panel-title { padding-bottom: 12px; border-bottom: 1px solid #435047; }
+    .similar-card { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid #435047; }
+    .similar-card h3 { margin: 0; font-size: 15px; }
+    .badge { display: inline-block; width: fit-content; padding: 4px 7px; border: 1px solid #667469; border-radius: 4px; color: #d4e4d4; font-size: 11px; }
+    .alert-banner { margin: 12px 0; padding: 12px; border-left: 3px solid #d9ad4c; background: rgba(217, 173, 76, .12); color: #f0d797; }
+    .alert-banner p { margin-top: 5px; }
+    .scan-form { display: grid; gap: 8px; margin: 22px 0; padding: 14px 0; border-top: 1px solid #435047; border-bottom: 1px solid #435047; }
+    #detail-content { display: grid; gap: 16px; padding: 20px 0; }
+    #detail-content p { overflow-wrap: anywhere; }
+    #detail-precedents, #detail-history { padding: 18px 0; border-top: 1px solid #435047; }
+    #decision-remark { min-height: 74px; margin: 12px 0; resize: vertical; }
+    .proposal button, .similar-card button { width: fit-content; }
+    [hidden] { display: none !important; }
+    @media (max-width: 800px) { .editor-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { .proposal { grid-template-columns: 1fr auto; } .decision { grid-column: 1 / -1; grid-row: 2; } .editor-fields { grid-template-columns: 1fr; } .editor-fields .wide { grid-column: auto; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><div><h1>IPMPRS <span class="muted">/ Proposal Workflow</span></h1><p class="muted">Puducherry Police Department</p></div><button id="logout" class="secondary" hidden>Sign out</button></header>
+    <form id="login-form">
+      <h2>Officer sign in</h2>
+      <label for="username">Demo account</label>
+      <input id="username" autocomplete="username" placeholder="insp.ops" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button>Sign in</button>
+      <p id="error" role="alert"></p>
+    </form>
+    <section id="dashboard" hidden>
+      <div class="toolbar"><div><h2 id="identity"></h2><p id="role" class="muted"></p></div><div class="toolbar-actions"><button id="new-proposal">New proposal</button><button id="refresh" class="secondary">Refresh</button></div></div>
+      <div id="stats" class="stats"></div>
+      <h2>Proposals</h2>
+      <div id="proposal-list"></div>
+    </section>
+    <p id="workflow-error" role="alert"></p>
+    <section id="editor" hidden>
+      <div class="toolbar"><div><h2 id="editor-heading">New proposal</h2><p class="muted">Drafts are visible only to their owning initiator.</p></div><button id="cancel-editor" class="secondary" type="button">Close</button></div>
+      <div class="editor-layout">
+        <div>
+          <form id="proposal-form" class="editor-fields">
+            <label class="wide">Title<input id="proposal-title" maxlength="180" required></label>
+            <label>Description<textarea id="proposal-description" required></textarea></label>
+            <label>Justification<textarea id="proposal-justification" required></textarea></label>
+            <label>Category<select id="proposal-category"><option>Procurement</option><option>Operational</option><option>Administrative</option><option>Technical</option><option>Infrastructure</option><option>Training</option></select></label>
+            <label>Department<input id="proposal-department" value="Headquarters & Administration" required></label>
+            <label>Estimated cost<input id="proposal-cost" type="number" min="0" step="0.01" value="0"></label>
+            <label>Priority<select id="proposal-priority"><option>Medium</option><option>High</option><option>Urgent</option><option>Low</option></select></label>
+            <div class="wide"><button id="save-proposal">Save draft</button></div>
+          </form>
+          <form id="scan-form" class="scan-form">
+            <h2>Draft from scanned note</h2>
+            <label>Scanned PDF or image<input id="scan-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp" required></label>
+            <button id="scan-submit" class="secondary">Upload scan and draft</button>
+          </form>
+        </div>
+        <aside aria-label="Similar past proposals">
+          <h2 class="panel-title">Similar past proposals</h2>
+          <div id="similar-alerts"></div>
+          <div id="similar-results"><p class="muted">Enter at least 25 characters to search cited precedents.</p></div>
+        </aside>
+      </div>
+    </section>
+    <section id="detail" hidden>
+      <div class="toolbar"><div><h2 id="detail-title"></h2><p id="detail-id" class="proposal-id"></p></div><button id="close-detail" class="secondary">Back</button></div>
+      <div id="detail-content"></div>
+      <textarea id="decision-remark" placeholder="Decision remark (required for workflow actions)"></textarea>
+      <div class="detail-actions">
+        <button id="detail-edit" class="secondary" hidden>Edit draft</button>
+        <button id="detail-submit" hidden>Submit proposal</button>
+        <button id="detail-review" hidden>Start review</button>
+        <button id="detail-approve" hidden>Approve</button>
+        <button id="detail-reject" class="secondary" hidden>Reject</button>
+        <button id="detail-report" class="secondary">Download Word report</button>
+        <button id="detail-verify" class="secondary">Verify audit trail</button>
+      </div>
+      <p id="audit-result" class="muted"></p>
+      <section id="detail-precedents" hidden><h2 class="panel-title">Precedents</h2><div id="detail-precedent-alerts"></div><div id="detail-precedent-results"></div></section>
+      <section id="detail-history"><h2 class="panel-title">History</h2><div id="history-list"></div></section>
+    </section>
+  </main>
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const dashboard = document.getElementById('dashboard');
+    const errorMessage = document.getElementById('error');
+    const logoutButton = document.getElementById('logout');
+    const workflowError = document.getElementById('workflow-error');
+    const roleLabel = value => ({initiator: 'Initiator', reviewer: 'Reviewer', approver: 'Approver'}[value] || value);
+    let activeUser = null;
+    let editorProposalId = null;
+    let openProposalData = null;
+    let similarTimer = null;
+
+    async function api(path, options = {}) {
+      const headers = options.body instanceof FormData ? (options.headers || {}) : {'Content-Type': 'application/json', ...(options.headers || {})};
+      const response = await fetch(path, {credentials: 'same-origin', ...options, headers});
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || `Request failed (${response.status})`);
+      return body;
+    }
+
+    function addText(parent, tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      element.textContent = String(text ?? '');
+      parent.append(element);
+      return element;
+    }
+
+    function showError(message) {
+      workflowError.textContent = String(message || '');
+    }
+
+    function setVisible(element, visible) {
+      element.hidden = !visible;
+    }
+
+    function renderSimilar(container, results) {
+      container.replaceChildren();
+      if (!results.length) {
+        addText(container, 'p', 'muted', 'No cited precedents matched this proposal.');
+        return;
+      }
+      for (const hit of results) {
+        const card = document.createElement('article');
+        card.className = 'similar-card';
+        addText(card, 'span', 'badge', hit.outcome || hit.status);
+        addText(card, 'span', 'proposal-id', hit.id);
+        addText(card, 'h3', '', hit.title);
+        addText(card, 'p', 'decision', `Decision remark: ${hit.decision_remark}`);
+        addText(card, 'p', 'muted', hit.why_similar);
+        const open = document.createElement('button');
+        open.type = 'button';
+        open.className = 'secondary';
+        open.textContent = 'Open proposal';
+        open.addEventListener('click', () => openProposal(hit.id));
+        card.append(open);
+        container.append(card);
+      }
+    }
+
+    function renderAlerts(container, alerts) {
+      container.replaceChildren();
+      const rejected = alerts?.previously_rejected;
+      if (rejected) {
+        const banner = document.createElement('div');
+        banner.className = 'alert-banner';
+        addText(banner, 'strong', '', `Previously rejected · ${rejected.proposal_id}`);
+        addText(banner, 'p', '', `“${rejected.decision_remark}”`);
+        container.append(banner);
+      }
+      const duplicate = alerts?.possible_duplicate;
+      if (duplicate) {
+        const banner = document.createElement('div');
+        banner.className = 'alert-banner';
+        addText(banner, 'strong', '', `Possible active duplicate · ${duplicate.proposal_id}`);
+        addText(banner, 'p', '', `${duplicate.title} · ${duplicate.status}`);
+        addText(banner, 'p', '', `Decision remark: ${duplicate.decision_remark}`);
+        container.append(banner);
+      }
+    }
+
+    async function searchSimilar() {
+      const title = document.getElementById('proposal-title').value.trim();
+      const description = document.getElementById('proposal-description').value.trim();
+      const query = `${title} ${description}`.trim();
+      if (query.length < 25) return;
+      try {
+        const result = await api('/api/proposals/similar', {method: 'POST', body: JSON.stringify({title, description, exclude_id: editorProposalId})});
+        renderAlerts(document.getElementById('similar-alerts'), result.alerts);
+        renderSimilar(document.getElementById('similar-results'), result.results);
+      } catch (error) { showError(error.message); }
+    }
+
+    function scheduleSimilar() {
+      clearTimeout(similarTimer);
+      similarTimer = setTimeout(searchSimilar, 600);
+    }
+
+    function showEditor(proposal = null) {
+      editorProposalId = proposal?.id || null;
+      document.getElementById('editor-heading').textContent = editorProposalId ? 'Edit proposal draft' : 'New proposal';
+      document.getElementById('proposal-title').value = proposal?.title || '';
+      document.getElementById('proposal-description').value = proposal?.description || '';
+      document.getElementById('proposal-justification').value = proposal?.justification || '';
+      document.getElementById('proposal-category').value = proposal?.category || 'Procurement';
+      document.getElementById('proposal-department').value = proposal?.department || 'Headquarters & Administration';
+      document.getElementById('proposal-cost').value = proposal?.estimated_cost || 0;
+      document.getElementById('proposal-priority').value = proposal?.priority || 'Medium';
+      document.getElementById('similar-alerts').replaceChildren();
+      document.getElementById('similar-results').replaceChildren();
+      setVisible(document.getElementById('dashboard'), false);
+      setVisible(document.getElementById('detail'), false);
+      setVisible(document.getElementById('editor'), true);
+      if (proposal) scheduleSimilar();
+      showError('');
+    }
+
+    async function openProposal(proposalId) {
+      try {
+        const data = await api(`/api/workflow/proposals/${encodeURIComponent(proposalId)}`);
+        const proposal = data.proposal;
+        openProposalData = proposal;
+        setVisible(document.getElementById('dashboard'), false);
+        setVisible(document.getElementById('editor'), false);
+        setVisible(document.getElementById('detail'), true);
+        document.getElementById('detail-title').textContent = proposal.title;
+        document.getElementById('detail-id').textContent = `${proposal.id} · ${proposal.ref_no} · ${proposal.status}`;
+        const detailContent = document.getElementById('detail-content');
+        detailContent.replaceChildren();
+        addText(detailContent, 'p', 'decision', `Decision remark: ${proposal.latest_decision?.reason || 'No decision remark recorded.'}`);
+        addText(detailContent, 'p', '', `Department: ${proposal.department} · Category: ${proposal.category} · Estimated cost: ${proposal.estimated_cost}`);
+        addText(detailContent, 'p', '', proposal.description);
+        addText(detailContent, 'p', '', `Justification: ${proposal.justification}`);
+        const ownDraft = activeUser.role === 'initiator' && proposal.created_by === activeUser.name && ['Draft', 'Returned for Revision'].includes(proposal.status);
+        setVisible(document.getElementById('detail-edit'), ownDraft);
+        setVisible(document.getElementById('detail-submit'), ownDraft);
+        setVisible(document.getElementById('detail-review'), activeUser.role === 'reviewer' && proposal.status === 'Submitted');
+        setVisible(document.getElementById('detail-approve'), activeUser.role === 'approver' && proposal.status === 'Under Review');
+        setVisible(document.getElementById('detail-reject'), activeUser.role === 'approver' && proposal.status === 'Under Review');
+        const history = document.getElementById('history-list');
+        history.replaceChildren();
+        for (const entry of proposal.history || []) addText(history, 'p', 'muted', `${proposal.id} · ${entry.to_status} · ${entry.actor} (${entry.role}) · ${entry.note}`);
+        const canReviewPrecedents = ['reviewer', 'approver'].includes(activeUser.role);
+        setVisible(document.getElementById('detail-precedents'), canReviewPrecedents);
+        if (canReviewPrecedents) {
+          const precedentData = await api(`/api/proposals/${encodeURIComponent(proposal.id)}/precedents`);
+          renderAlerts(document.getElementById('detail-precedent-alerts'), precedentData.alerts);
+          renderSimilar(document.getElementById('detail-precedent-results'), precedentData.results);
+        }
+        showError('');
+      } catch (error) { showError(error.message); }
+    }
+
+    async function loadDashboard() {
+      try {
+        const data = await api('/api/workflow/dashboard');
+        activeUser = data.user;
+        loginForm.hidden = true;
+        dashboard.hidden = false;
+        logoutButton.hidden = false;
+        document.getElementById('identity').textContent = data.user.name;
+        document.getElementById('role').textContent = roleLabel(data.user.role);
+        const stats = document.getElementById('stats');
+        stats.replaceChildren();
+        for (const [label, value] of Object.entries({Total: data.stats.total_proposals, Pending: data.stats.pending_action, 'Under review': data.stats.under_review, Approved: data.stats.approved, Rejected: data.stats.rejected, 'Avg. days': data.stats.avg_decision_days})) addText(stats, 'span', 'muted', `${label}: ${value}`);
+        setVisible(document.getElementById('new-proposal'), data.user.role === 'initiator');
+        const list = document.getElementById('proposal-list');
+        list.replaceChildren();
+        for (const proposal of data.proposals) {
+          const row = document.createElement('article');
+          row.className = 'proposal';
+          const info = document.createElement('div');
+          addText(info, 'span', 'proposal-id', proposal.id);
+          addText(info, 'h2', '', proposal.title);
+          addText(info, 'p', 'muted', `${proposal.ref_no} · ${proposal.status}`);
+          row.append(info);
+          const remark = proposal.latest_decision?.reason || 'No decision remark recorded.';
+          addText(row, 'p', 'decision', `Decision remark: ${remark}`);
+          const actions = document.createElement('div');
+          actions.className = 'row-actions';
+          const open = document.createElement('button');
+          open.className = 'secondary';
+          open.textContent = 'Open';
+          open.addEventListener('click', () => openProposal(proposal.id));
+          actions.append(open);
+          const verify = document.createElement('button');
+          verify.className = 'secondary';
+          verify.textContent = 'Verify audit trail';
+          verify.addEventListener('click', async () => {
+            try {
+              const result = await api(`/api/workflow/proposals/${encodeURIComponent(proposal.id)}/verify`);
+              verify.textContent = result.valid ? `Verified · ${result.chain_length} entries` : 'Audit trail invalid';
+            } catch (error) { errorMessage.textContent = error.message; }
+          });
+          actions.append(verify);
+          row.append(actions);
+          list.append(row);
+        }
+      } catch (error) {
+        if (error.message === 'Login required.') return;
+        showError(error.message);
+      }
+    }
+
+    loginForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      errorMessage.textContent = '';
+      try {
+        await api('/api/workflow/login', {method: 'POST', body: JSON.stringify({username: document.getElementById('username').value, password: document.getElementById('password').value})});
+        await loadDashboard();
+      } catch (error) { errorMessage.textContent = error.message; }
+    });
+    document.getElementById('refresh').addEventListener('click', loadDashboard);
+    logoutButton.addEventListener('click', async () => { await api('/api/workflow/logout', {method: 'POST'}); dashboard.hidden = true; logoutButton.hidden = true; loginForm.hidden = false; });
+    document.getElementById('new-proposal').addEventListener('click', () => showEditor());
+    document.getElementById('cancel-editor').addEventListener('click', () => { setVisible(document.getElementById('editor'), false); setVisible(dashboard, true); });
+    document.getElementById('close-detail').addEventListener('click', () => { setVisible(document.getElementById('detail'), false); setVisible(dashboard, true); });
+    for (const fieldId of ['proposal-title', 'proposal-description', 'proposal-category', 'proposal-department']) document.getElementById(fieldId).addEventListener('input', scheduleSimilar);
+    document.getElementById('proposal-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const body = {title: document.getElementById('proposal-title').value.trim(), description: document.getElementById('proposal-description').value.trim(), justification: document.getElementById('proposal-justification').value.trim(), category: document.getElementById('proposal-category').value, department: document.getElementById('proposal-department').value.trim(), estimated_cost: document.getElementById('proposal-cost').value, priority: document.getElementById('proposal-priority').value};
+      try {
+        const data = await api(editorProposalId ? `/api/workflow/proposals/${encodeURIComponent(editorProposalId)}` : '/api/workflow/proposals', {method: editorProposalId ? 'PUT' : 'POST', body: JSON.stringify(body)});
+        await openProposal(data.proposal.id);
+      } catch (error) { showError(error.message); }
+    });
+    document.getElementById('scan-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const file = document.getElementById('scan-file').files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const data = await api('/api/workflow/proposal-ai/draft', {method: 'POST', body: formData});
+        showEditor(data.proposal);
+        showError(data.ai_drafted ? 'AI draft created. Review every extracted field before submission.' : 'OCR draft created with template fallback. Review every field before submission.');
+      } catch (error) { showError(error.message); }
+    });
+    async function transitionCurrent(target) {
+      const remark = document.getElementById('decision-remark').value.trim();
+      if (!remark) { showError('Enter a decision remark before continuing.'); return; }
+      try {
+        await api(`/api/workflow/proposals/${encodeURIComponent(openProposalData.id)}/transition`, {method: 'POST', body: JSON.stringify({to_status: target, remark})});
+        await openProposal(openProposalData.id);
+      } catch (error) { showError(error.message); }
+    }
+    document.getElementById('detail-edit').addEventListener('click', () => showEditor(openProposalData));
+    document.getElementById('detail-submit').addEventListener('click', () => transitionCurrent('Submitted'));
+    document.getElementById('detail-review').addEventListener('click', () => transitionCurrent('Under Review'));
+    document.getElementById('detail-approve').addEventListener('click', () => transitionCurrent('Approved'));
+    document.getElementById('detail-reject').addEventListener('click', () => transitionCurrent('Rejected'));
+    document.getElementById('detail-verify').addEventListener('click', async () => {
+      try { const result = await api(`/api/workflow/proposals/${encodeURIComponent(openProposalData.id)}/verify`); document.getElementById('audit-result').textContent = `${openProposalData.id} · ${result.valid ? 'Audit trail verified' : 'Audit trail invalid'} · ${result.chain_length} entries`; }
+      catch (error) { showError(error.message); }
+    });
+    document.getElementById('detail-report').addEventListener('click', async () => {
+      try {
+        const response = await fetch(`/api/workflow/proposals/${encodeURIComponent(openProposalData.id)}/report.docx`, {credentials: 'same-origin'});
+        if (!response.ok) throw new Error('Report download failed.');
+        const objectUrl = URL.createObjectURL(await response.blob());
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = `${openProposalData.ref_no.replaceAll('/', '_')}.docx`;
+        link.click();
+        URL.revokeObjectURL(objectUrl);
+      } catch (error) { showError(error.message); }
+    });
+    loadDashboard();
+  </script>
+</body>
+</html>

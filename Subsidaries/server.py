@@ -60,6 +60,10 @@ POLICE_SYSTEM_PROMPT = (
 
 # ─── Initialize Core Components ─────────────────────────────────────
 gateway            = ModelGateway(default_model=DEFAULT_MODEL, keep_alive="5m")
+from workflow_api import init_workflow
+init_workflow(app, gateway=gateway, model=DEFAULT_MODEL)
+from precedent_index import precedent_index
+
 router             = ModelRouter(default_model=DEFAULT_MODEL)
 knowledge_base     = KnowledgeBase()
 ingestion_pipeline = IngestionPipeline()
@@ -103,6 +107,13 @@ def serve_js():
 @app.route("/hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4", methods=["GET"])
 def serve_bg_video():
     video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_20260405_171521_25968ba2-b594-4b32-aab7-f6b69398a6fa.mp4")
+    if os.path.exists(video_path):
+        return send_file(video_path, mimetype="video/mp4")
+    return ("", 404)
+
+@app.route("/hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4", methods=["GET"])
+def serve_current_bg_video():
+    video_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4")
     if os.path.exists(video_path):
         return send_file(video_path, mimetype="video/mp4")
     return ("", 404)
@@ -670,7 +681,7 @@ def api_ocr():
 
     file_bytes = f.read()
     try:
-        result = ocr_any(f.filename, file_bytes)
+        result = ocr_any(f.filename, file_bytes, gateway=gateway)
         if not result.success:
             return jsonify({"error": result.error or "OCR produced no text."}), 422
 
@@ -873,4 +884,4 @@ if __name__ == "__main__":
 |    GET  /api/proposals/:id/verify-> Verify SHA-256 audit chain    |
 +-------------------------------------------------------------------+
 """)
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="127.0.0.1", port=port, debug=False)

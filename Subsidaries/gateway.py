@@ -77,6 +77,10 @@ class ModelGateway:
 
         except ollama.ResponseError as e:
             if "not found" in str(e).lower():
+                has_images = any(message.get("images") for message in messages)
+                if has_images:
+                    print(f"[Gateway] Vision model '{model}' not found; image requests cannot use a text-only fallback.")
+                    raise ModelNotFoundError(model) from e
                 print(f"[Gateway] Model '{model}' not found, "
                       f"falling back to {self.default_model}")
                 if model != self.default_model:
