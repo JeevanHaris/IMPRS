@@ -14,7 +14,7 @@ openpyxl>=3.1.0
 pdfplumber>=0.10.0
 pytesseract>=0.3.10
 Pillow>=10.0.0
-pdf2image>=1.17.0
+PyMuPDF>=1.24.0
 
 # ─── Vector Search & Similarity ───────────────────────────
 faiss-cpu>=1.7.4

@@ -36,6 +36,7 @@ from ingestion import IngestionPipeline
 from knowledge_base import KnowledgeBase, chunk_document
 from memory_store import MemoryStore
 from multimodal import ocr_any
+from proposal_ai import create_draft_from_scan
 
 # ─── IPMPRS Domain Modules ──────────────────────────────────────────
 import proposals
@@ -237,6 +238,34 @@ def api_create_proposal():
     # Re-fetch proposal with linked precedents
     full_prop = proposals.get_proposal(prop["id"])
     return jsonify({"success": True, "proposal": full_prop}), 201
+
+@app.route("/api/proposals/draft-from-scan", methods=["POST"])
+def api_draft_proposal_from_scan():
+    """Extract proposal fields from an uploaded scan without saving a proposal."""
+    uploaded = request.files.get("file")
+    if not uploaded or not uploaded.filename:
+        return jsonify({"error": "Choose a scanned PDF or image."}), 400
+
+    extension = os.path.splitext(uploaded.filename)[1].lower()
+    if extension not in {".pdf", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}:
+        return jsonify({"error": "Only scanned PDFs and image files are supported."}), 415
+
+    file_bytes = uploaded.read(16 * 1024 * 1024 + 1)
+    if len(file_bytes) > 16 * 1024 * 1024:
+        return jsonify({"error": "Scan file exceeds the 16 MB limit."}), 413
+
+    try:
+        drafted = create_draft_from_scan(uploaded.filename, file_bytes, gateway, DEFAULT_MODEL)
+        return jsonify({
+            "draft": drafted["draft"],
+            "ai_drafted": drafted["ai_drafted"],
+            "ocr_confidence": drafted["ocr_confidence"],
+        })
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 422
+    except Exception as exc:
+        app.logger.exception("Proposal scan extraction failed")
+        return jsonify({"error": f"Could not extract proposal details from this scan: {exc}"}), 500
 
 @app.route("/api/proposals", methods=["GET"])
 def api_list_proposals():

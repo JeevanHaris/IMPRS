@@ -1,16 +1,15 @@
 """
 IPMPRS — Multimodal OCR Engine
 ────────────────────────────────────────────────────────────────────────
-Handles image OCR via Ollama's vision model and scanned-PDF OCR via:
-    1. Llama 3.2 Vision for image text extraction
-    2. pytesseract (Tesseract) for rendered scanned-PDF pages
-    3. pdf2image for rendering scanned PDF pages
+Handles image OCR and scanned-PDF OCR via pytesseract (Tesseract), with
+PyMuPDF used to render scanned PDF pages.
 
 Returns structured OCRResult objects consumed by ingestion.py.
 """
 
 import os
 import io
+import shutil
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -55,6 +54,23 @@ def _preprocess_image(pil_img):
         return pil_img
 
 
+def _configure_tesseract(pytesseract):
+    configured_path = os.environ.get("TESSERACT_CMD")
+    if configured_path:
+        pytesseract.pytesseract.tesseract_cmd = configured_path
+        return
+
+    if os.name == "nt" and shutil.which("tesseract") is None:
+        candidates = (
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        )
+        for candidate in candidates:
+            if os.path.isfile(candidate):
+                pytesseract.pytesseract.tesseract_cmd = candidate
+                return
+
+
 # ─── Image OCR ───────────────────────────────────────────────────────
 
 def ocr_image(file_bytes: bytes, gateway=None, vision_model=None) -> OCRResult:
@@ -68,40 +84,36 @@ def ocr_image(file_bytes: bytes, gateway=None, vision_model=None) -> OCRResult:
         OCRResult with extracted text.
     """
     try:
+        import pytesseract
         from PIL import Image
+        _configure_tesseract(pytesseract)
     except ImportError as e:
-        return OCRResult(error=f"Image OCR dependency missing: {e}. Run: pip install Pillow")
+        return OCRResult(error=f"Image OCR dependencies missing: {e}. Run: pip install pytesseract Pillow")
 
-    if gateway is None:
-        return OCRResult(error="Image OCR requires Ollama. Start Ollama and configure the shared model gateway.")
-
-    model = vision_model or os.environ.get("ARIA_VISION_MODEL", "llama3.2-vision:11b")
     try:
-        image = Image.open(io.BytesIO(file_bytes)).convert("RGB")
-        image_buffer = io.BytesIO()
-        image.save(image_buffer, format="PNG")
-        response = gateway.call(
-            model,
-            [
-                {
-                    "role": "system",
-                    "content": "Transcribe all readable text in this image as accurately as possible. Preserve line breaks and do not summarize, interpret, or add text.",
-                },
-                {"role": "user", "content": "Extract the text from this image.", "images": [image_buffer.getvalue()]},
-            ],
-            options={"temperature": 0},
-        )
-        text = str(response.content or "").strip()
+        image = Image.open(io.BytesIO(file_bytes))
+        processed = _preprocess_image(image)
+        text = pytesseract.image_to_string(processed, config=r"--oem 3 --psm 6", lang="eng").strip()
         if not text:
-            return OCRResult(error=f"Vision model '{model}' did not detect readable text in the image.")
+            return OCRResult(error="Tesseract did not detect readable text in the image.")
+
+        confidence = 0.0
+        try:
+            data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
+            confidence_values = [float(value) for value in data["conf"] if float(value) >= 0]
+            if confidence_values:
+                confidence = sum(confidence_values) / len(confidence_values) / 100.0
+        except Exception:
+            pass
+
         return OCRResult(
             text=text,
             page_texts=[text],
-            confidence=0.0,
-            ocr_engine=model,
+            confidence=round(confidence, 2),
+            ocr_engine="tesseract",
         )
     except Exception as e:
-        return OCRResult(error=f"Vision OCR with '{model}' failed: {e}")
+        return OCRResult(error=f"Tesseract image OCR failed: {e}. Ensure Tesseract is installed and on PATH.")
 
 
 # ─── Scanned PDF OCR ─────────────────────────────────────────────────
@@ -118,20 +130,22 @@ def ocr_pdf(file_bytes: bytes, dpi: int = 250) -> OCRResult:
         OCRResult with per-page texts concatenated.
     """
     try:
-        from pdf2image import convert_from_bytes
-    except ImportError:
-        return OCRResult(error="pdf2image not installed. Run: pip install pdf2image")
-
-    try:
+        import fitz
         import pytesseract
         from PIL import Image
+        _configure_tesseract(pytesseract)
     except ImportError as e:
-        return OCRResult(error=f"OCR dependencies missing: {e}. Run: pip install pytesseract Pillow")
+        return OCRResult(error=f"OCR dependencies missing: {e}. Run: pip install PyMuPDF pytesseract Pillow")
 
     try:
-        images = convert_from_bytes(file_bytes, dpi=dpi)
+        scale = dpi / 72
+        with fitz.open(stream=file_bytes, filetype="pdf") as pdf:
+            images = [
+                Image.open(io.BytesIO(page.get_pixmap(matrix=fitz.Matrix(scale, scale)).tobytes("png"))).copy()
+                for page in pdf
+            ]
     except Exception as e:
-        return OCRResult(error=f"PDF render error: {e}. Ensure Poppler is installed.")
+        return OCRResult(error=f"PDF render error: {e}")
 
     page_texts = []
     all_confidences = []
@@ -145,7 +159,7 @@ def ocr_pdf(file_bytes: bytes, dpi: int = 250) -> OCRResult:
             # Confidence
             try:
                 data = pytesseract.image_to_data(processed, output_type=pytesseract.Output.DICT)
-                conf_values = [c for c in data["conf"] if c != -1]
+                conf_values = [float(value) for value in data["conf"] if float(value) >= 0]
                 if conf_values:
                     all_confidences.extend(conf_values)
             except Exception:
@@ -160,7 +174,7 @@ def ocr_pdf(file_bytes: bytes, dpi: int = 250) -> OCRResult:
     avg_conf = (sum(all_confidences) / len(all_confidences) / 100.0) if all_confidences else 0.75
 
     if not full_text.strip():
-        return OCRResult(error="OCR produced no text — ensure Tesseract and Poppler are installed")
+        return OCRResult(error="OCR produced no text — ensure Tesseract is installed and available on PATH")
 
     return OCRResult(
         text=full_text,

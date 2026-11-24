@@ -73,22 +73,20 @@ Draft  ──(Initiator: Precedent Gate)──>  Submitted  ──(Reviewer)─�
 
 ### Prerequisites
 - Python 3.10+
-- (Optional) [Ollama](https://ollama.com) running locally with `llama3.2`, `llama3.2-vision:11b`, and `nomic-embed-text`. Image OCR uses Llama 3.2 Vision; scanned-PDF OCR still requires Tesseract and Poppler.
+- (Optional) [Ollama](https://ollama.com) running locally with `llama3.2` and `nomic-embed-text`.
+- Tesseract OCR installed and available on `PATH`.
 
 ### Setup & Run
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# Pull the Llama 3.2 vision model used for image OCR
-ollama pull llama3.2-vision:11b
-
 # 2. Start the IPMPRS Server
 python server.py
 # (Or run start.bat on Windows)
 ```
 
-Set `ARIA_VISION_MODEL` to use a different Ollama vision model tag. The separate `llama3.2:latest` text model cannot accept images; use `llama3.2-vision:11b` for image OCR. Llama 3.2 Vision is 11B parameters; a 4B Llama 3.2 vision model is not available. Image OCR does not require Tesseract.
+Image and scanned-PDF OCR use Tesseract. Install the Tesseract executable and ensure it is available on `PATH`.
 
 ### Accessing the Platform
 Open `http://localhost:5000` or `index.html` directly in your browser.

@@ -471,6 +471,15 @@
           <form id="proposal-form" onsubmit="event.preventDefault(); submitProposalForm();">
             <input type="hidden" id="form-prop-id" value="" />
 
+            <div class="form-group">
+              <label for="proposal-scan-file">Fill from scanned proposal</label>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="file" id="proposal-scan-file" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp" />
+                <button type="button" id="proposal-scan-button" class="btn btn-secondary" onclick="draftProposalFromScan()">Extract details</button>
+              </div>
+              <div class="form-hint" id="proposal-scan-status" role="status">Upload a scanned note to prefill the proposal fields for review.</div>
+            </div>
+
             <div class="form-row">
               <div class="form-group">
                 <label>Proposal Category *</label>
@@ -1059,7 +1068,7 @@
     <header class="pane-header">
       <div>
         <h1 class="pane-title">Image OCR</h1>
-        <p class="pane-sub">Extract text from scanned images and photographs using Llama 3.2 Vision</p>
+        <p class="pane-sub">Extract text from scanned images and photographs using Tesseract OCR</p>
       </div>
     </header>
 

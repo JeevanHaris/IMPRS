@@ -729,6 +729,56 @@ function acknowledgeAllPrecedents() {
 }
 
 /* ── FORM ACTIONS: SAVE DRAFT OR SUBMIT ────────────────────────── */
+async function draftProposalFromScan() {
+  const file = $('proposal-scan-file')?.files?.[0];
+  const button = $('proposal-scan-button');
+  const status = $('proposal-scan-status');
+  if (!file) {
+    toast('Choose a scanned PDF or image first.', 'err');
+    return;
+  }
+
+  if (button) { button.disabled = true; button.textContent = 'Extracting…'; }
+  if (status) status.textContent = 'Reading the scan and extracting proposal details…';
+  showLoad(`Extracting proposal details from ${file.name}…`);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API}/api/proposals/draft-from-scan`, { method: 'POST', body: formData });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Scan extraction failed.');
+
+    const draft = data.draft;
+    $('form-title-inp').value = draft.title || '';
+    $('form-category').value = draft.category || '';
+    const department = $('form-dept');
+    const matchingDepartment = Array.from(department.options).find(option => option.value.toLowerCase() === String(draft.department || '').toLowerCase());
+    if (matchingDepartment) {
+      department.value = matchingDepartment.value;
+    } else if (draft.department) {
+      const option = new Option(draft.department, draft.department, true, true);
+      department.add(option);
+    }
+    $('form-cost').value = draft.estimated_cost ?? 0;
+    $('form-priority').value = draft.priority || 'Medium';
+    $('form-desc').value = draft.description || '';
+    $('form-just').value = draft.justification || '';
+    onFormCategoryChanged($('form-category').value);
+    triggerLivePrecedentSearch();
+
+    const confidence = data.ocr_confidence ? ` OCR confidence: ${Math.round(data.ocr_confidence * 100)}%.` : '';
+    const draftSource = data.ai_drafted ? 'AI extracted' : 'OCR fallback filled';
+    if (status) status.textContent = `${draftSource} proposal details. Review every field before saving or submitting.${confidence}`;
+    toast('Proposal fields filled from scan. Review them before saving.', 'ok');
+  } catch (error) {
+    if (status) status.textContent = error.message;
+    toast(`Scan extraction failed: ${error.message}`, 'err', 5000);
+  } finally {
+    hideLoad();
+    if (button) { button.disabled = false; button.textContent = 'Extract details'; }
+  }
+}
+
 async function saveAsDraft() {
   const prop = await createOrUpdateProposal('Draft');
   if (prop) {
